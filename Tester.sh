@@ -215,6 +215,7 @@ elif [ $1 == "help" ]; then
     help
 else
     program=$1
+    echo $program
 fi
 
 for (( i=2; i<="$#"; i++)); do
