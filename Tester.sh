@@ -69,10 +69,10 @@ function supported_language()
 #example compare $fileToCompare1 $fileToCompare2 $output file
 function compare()
 {
-    error=""
-    if diff --ignore-trailing-space $1 $2 > $3 2> /dev/null; then
-        :
-    else
+    diff --ignore-trailing-space $1 $2 > $3 2> /dev/null
+    
+    errorStatus=$?
+    if [ $errorStatus -eq 2 ]; then
         rm $3
     fi
 }
