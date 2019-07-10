@@ -33,6 +33,7 @@ noOfTests=0
 okCases=0
 
 #default cases
+warnings=false
 emojiEnabled=true
 timeout="1s"
 language="java" #supported languages at this point: Java {default, java}, C {c}, C++ {cpp}
@@ -52,8 +53,10 @@ function supported_language()
         printf "%b  %s\n" $E_QUESTION "Testing: "$program".java"
         return 0
     elif [ $1 == "c" ]; then
+        printf "%b  %s\n" $E_QUESTION "Testing: "$program".c"
         return 0
     elif [ $1 == "cpp" ]; then
+        printf "%b  %s\n" $E_QUESTION "Testing: "$program".c"
         return 0
     else
         echo Language not supported {supported: java, c, cpp}
@@ -61,22 +64,21 @@ function supported_language()
     fi
 }
 
-#comparing two files
+#comparing two files and printing result
+#example compare $fileToCompare1 $fileToCompare2 $output file
 function compare()
 {
-    file1=$1
-    file2=$2
-
-    diff --ignore-trailing-space $file1 $file2 > $diffOutput"/"$fileName
+    diff --ignore-trailing-space $1 $2 > $3
 }
 
 #printing result of one of the test cases
+#example printResult $fileName
 function printResult()
 {
     fileName=$1
     diffFile=$diffOutput"/"$fileName
     if [ -s $diffFile ]; then
-        printf "${RED}%b${NC}  %s\t ${RED}NOK${NC}\n" $E_XMARK $fileName
+        printf "${RED}%b${NC}  %s\t ${RED}NOK${NC}\n" '\U2716' $fileName
     else
         printf "${GREEN}%b${NC}  %s\t ${GREEN}OK${NC}\n" $E_CHECKMARK $fileName
         (( okCases++ ))
@@ -84,9 +86,9 @@ function printResult()
     (( noOfTests++ ))
 }
 
+#delete all emojis if those are disabled
 function emojis() 
 {
-    #delete all emojis if those are disabled
     if [ $emojiEnabled == false ]; then
         E_QUESTION=""
         E_XMARK=""
@@ -108,7 +110,7 @@ function javaTesting()
         printf "%b  %s\n\n" $E_CHECKMARK "Compiling: OK"
         rm $programOutput"/error.txt"
     else
-        printf "${ORANGE}Compiling failed\n${NC}Exiting\n"
+        printf "${ORANGE}Compiling failed\n${NC}Exiting\n"  
         exit 40
     fi
 
@@ -118,15 +120,15 @@ function javaTesting()
 
         #running
         timeout 1s java $program < $file > $programOutput"/"$fileName
-        
+        exitStatus=$?
         #if timeout
-        if [[ $? == 124 ]]; then
+        if [[ $exitStatus == 124 ]]; then
             printf "%b  %s\t${BLUE}Timeout${NC}\n" $E_TIMEOUT $fileName
             continue
         fi
         
         #comparing
-        compare $programOutput"/"$fileName $testCases"/"$fileName
+        compare $programOutput"/"$fileName $testCases"/"$fileName $diffOutput"/"$fileName
 
         #printing
         printResult $fileName
@@ -137,6 +139,46 @@ function javaTesting()
 function cTesting()
 {
     echo TO-DO
+    #compile program using gcc
+    if gcc "./"$program".c" -o $program 2> $programOutput"/error.txt"; then
+        if [ -s $programOutput"/error.txt" ]; then
+            printf "${BLUE}%s\n${NC}" "Compiled with warnings"
+            if [ $warnings == true ]; then
+                :
+            else
+                printf "To continue testing with warnings use '-w true' while running script\n"
+                printf "Exiting\n"
+                exit 38
+            fi
+        else
+            printf "%b  %s\n\n" $E_CHECKMARK "Compiling: OK"
+            rm $programOutput"/error.txt"
+        fi
+    else
+        printf "${ORANGE}Compiling failed\n${NC}Exiting\n"  
+        exit 40
+    fi
+
+    #running & comparing
+    for file in $input"/"*.txt; do
+        fileName=$(basename -- "$file")
+
+        #running
+        timeout 1s "./"$program < $file > $programOutput"/"$fileName
+        exitStatus=$?
+        #if timeout
+        if [[ $exitStatus == 124 ]]; then
+            printf "%b  %s\t${BLUE}Timeout${NC}\n" $E_TIMEOUT $fileName
+            continue
+        fi
+
+        #comparing
+        compare $programOutput"/"$fileName $testCases"/"$fileName $diffOutput"/"$fileName
+
+        #printing
+        printResult $fileName
+
+    done
 }
 
 function result() 
@@ -194,6 +236,9 @@ for (( i=2; i<="$#"; i++)); do
     elif [ $argument == "-e" ]; then
         (( i++ ))
         emojiEnabled=${!i}
+    elif [ $argument == "-w" ]; then
+        (( i++ ))
+        warnings=${!i}
     fi
 done
 
