@@ -12,6 +12,7 @@ E_QUESTION='\U2754'
 E_XMARK='\U2716'
 E_CHECKMARK='\U2714'
 E_TIMEOUT='\U231B'
+E_EXPLAMATION='\U2755'
 E_BAD='\U1F44E' #0-49%
 E_NOTGOOD='\U1F615' #50-59%
 E_NEUTRAL='\U1F44D' #60-69%
@@ -68,7 +69,12 @@ function supported_language()
 #example compare $fileToCompare1 $fileToCompare2 $output file
 function compare()
 {
-    diff --ignore-trailing-space $1 $2 > $3
+    error=""
+    if diff --ignore-trailing-space $1 $2 > $3 2> /dev/null; then
+        :
+    else
+        rm $3
+    fi
 }
 
 #printing result of one of the test cases
@@ -77,8 +83,12 @@ function printResult()
 {
     fileName=$1
     diffFile=$diffOutput"/"$fileName
-    if [ -s $diffFile ]; then
-        printf "${RED}%b${NC}  %s\t ${RED}NOK${NC}\n" '\U2716' $fileName
+
+    if [ ! -f $diffFile ]; then
+        printf "${BLUE}%b${NC}  %s\t ${BLUE}Error, ignoring${NC}\n" $E_EXPLAMATION $fileName
+        (( noOfTests-- ))
+    elif [ -s $diffFile ]; then
+        printf "${RED}%b${NC}  %s\t ${RED}NOK${NC}\n" $E_XMARK $fileName
     else
         printf "${GREEN}%b${NC}  %s\t ${GREEN}OK${NC}\n" $E_CHECKMARK $fileName
         (( okCases++ ))
