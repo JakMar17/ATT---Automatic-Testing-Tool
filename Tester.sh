@@ -73,8 +73,10 @@ function compare()
     
     errorStatus=$?
     if [ $errorStatus -eq 2 ]; then
-        rm $3
+        return 2
     fi
+
+    return 0
 }
 
 #printing result of one of the test cases
@@ -139,9 +141,14 @@ function javaTesting()
         
         #comparing
         compare $programOutput"/"$fileName $testCases"/"$fileName $diffOutput"/"$fileName
+        exitStatus=$?
 
         #printing
-        printResult $fileName
+        if [ $exitStatus -eq 0 ]; then
+            printResult $fileName
+        else
+            printf "${BLUE}%b${NC}  %s\t ${BLUE} Error: diff returned %d, ignoring${NC}\n" $E_EXPLAMATION $fileName $exitStatus
+        fi
 
     done
 }
