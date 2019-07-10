@@ -10,7 +10,7 @@ ATT can be used with Linux/UNIX based operating systems. Under certain condition
 
 You need system that fully support bash scripts. Running bash inside Powershell or CMD console on Windows using ```sh``` command breaks code.
 
->At this point you need to have source code of your testing programs __in the same directory__ as ATT bash script.
+>At this point you need to have source code of tested program __in the same directory__ as ATT bash script.
 
 ### Directory structure
 
@@ -32,9 +32,9 @@ You need system that fully support bash scripts. Running bash inside Powershell 
      |    |---test02**.txt
      |    |---...
      |---diff
-     |    |---test01**.txt
-     |    |---test02**.txt
-     |    |---...
+          |---test01**.txt
+          |---test02**.txt
+          |---...
 
 * can be change using arguments
 ** can be different, but associated input and test case has to have same name (files in programOutput and diff folders will have same name also)
