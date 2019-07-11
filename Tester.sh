@@ -34,10 +34,10 @@ noOfTests=0
 okCases=0
 
 #default cases
-timeout=1s
+times=false
+timeout=1
 warnings=false
 emojiEnabled=true
-timeout="1s"
 language="java" #supported languages at this point: Java {default, java}, C {c}, C++ {cpp}
 
 #functions
@@ -83,16 +83,24 @@ function printResult() {
     fileName=$1
     diffFile=$diffOutput"/"$fileName
     exitStatus=$2
+    duration=$3
 
     if [ $exitStatus -ne 0 ]; then
         printf "${BLUE}%b${NC}  %s\t ${BLUE} Error: diff returned %d, ignoring${NC}\n" $E_EXPLAMATION $fileName $exitStatus
         (( noOfTest-- ))
     elif [ -s $diffFile ]; then
-        printf "${RED}%b${NC}  %s\t ${RED}NOK${NC}\n" $E_XMARK $fileName
+        printf "${RED}%b${NC}  %s\t ${RED}NOK${NC}" $E_XMARK $fileName
     else
-        printf "${GREEN}%b${NC}  %s\t ${GREEN}OK${NC}\n" $E_CHECKMARK $fileName
+        printf "${GREEN}%b${NC}  %s\t ${GREEN}OK ${NC}" $E_CHECKMARK $fileName
         (( okCases++ ))
     fi
+
+    if [ $times == "true" ]; then
+        printf " (%d ms)\n" $duration
+    else
+        printf "\n"
+    fi
+
     (( noOfTests++ ))
 }
 
@@ -120,39 +128,6 @@ function javaCompile() {
         printf "${ORANGE}Compiling failed\n${NC}Exiting\n"  
         exit 40
     fi
-<<<<<<< HEAD
-
-    #running & comparing
-    for file in $input"/"*.txt; do
-        fileName=$(basename -- "$file")
-
-        #running
-        start=$(date +%s%N)
-        timeout $timeout java $program < $file > $programOutput"/"$fileName
-        finnish=$(date +%s%N)
-        duration=$(( finnish-start ))
-        echo $(($duration/1000000))
-        exitStatus=$?
-        #if timeout
-        if [[ $exitStatus == 124 ]]; then
-            printf "%b  %s\t${BLUE}Timeout${NC}\n" $E_TIMEOUT $fileName
-            continue
-        fi
-        
-        #comparing
-        compare $testCases"/"$fileName $programOutput"/"$fileName $diffOutput"/"$fileName
-        exitStatus=$?
-
-        #printing
-        if [ $exitStatus -eq 0 ]; then
-            printResult $fileName
-        else
-            printf "${BLUE}%b${NC}  %s\t ${BLUE} Error: diff returned %d, ignoring${NC}\n" $E_EXPLAMATION $fileName $exitStatus
-        fi
-
-    done
-=======
->>>>>>> master
 }
 
 function cCompile() {
@@ -200,11 +175,13 @@ function run() {
 
     case $language in
         "java")
+            start=$(date +%s%N)
             timeout $timeout java $program < $file > $programOutput"/"$fileName
             exitStatus=$?
+            finnish=$(date +%s%N)
         ;;
         "c")
-            timeout 1s "./"$program < $file > $programOutput"/"$fileName
+            timeout $timeout "./"$program < $file > $programOutput"/"$fileName
             exitStatus=$?
         ;;
         *)
@@ -222,8 +199,14 @@ function testing() {
         fileName=$(basename -- "$file")
 
         #running
+        start=$(date +%s%N)
         run $file
         exitStatus=$?
+        
+        finnish=$(date +%s%N)
+        duration=$(( finnish-start ))
+        duration=$(($duration/1000000))
+
         #if timeout
         if [[ $exitStatus == 124 ]]; then
             printf "%b  %s\t${BLUE}Timeout${NC}\n" $E_TIMEOUT $fileName
@@ -234,7 +217,7 @@ function testing() {
         compare $testCases"/"$fileName $programOutput"/"$fileName $diffOutput"/"$fileName
         exitStatus=$?
         #printing
-        printResult $fileName $exitStatus
+        printResult $fileName $exitStatus $duration
 
     done
 
@@ -303,6 +286,8 @@ for (( i=2; i<="$#"; i++)); do
     elif [ $argument == "-t" ]; then
         (( i++ ))
         timeout=${!i}
+    elif [ $argument == "-times" ]; then
+        times=true
     fi
 done
 
