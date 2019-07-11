@@ -34,6 +34,7 @@ noOfTests=0
 okCases=0
 
 #default cases
+timeout=1s
 warnings=false
 emojiEnabled=true
 timeout="1s"
@@ -131,7 +132,7 @@ function javaTesting()
         fileName=$(basename -- "$file")
 
         #running
-        timeout 1s java $program < $file > $programOutput"/"$fileName
+        timeout $timeout java $program < $file > $programOutput"/"$fileName
         exitStatus=$?
         #if timeout
         if [[ $exitStatus == 124 ]]; then
@@ -257,6 +258,9 @@ for (( i=2; i<="$#"; i++)); do
     elif [ $argument == "-w" ]; then
         (( i++ ))
         warnings=${!i}
+    elif [ $argument == "-t" ]; then
+        (( i++ ))
+        timeout=${!i}
     fi
 done
 
