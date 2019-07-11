@@ -132,10 +132,7 @@ function javaTesting()
         fileName=$(basename -- "$file")
 
         #running
-        start=$SECONDS
         timeout $timeout java $program < $file > $programOutput"/"$fileName
-        duration=$(( SECONDS - start ))
-        echo $duration
         exitStatus=$?
         #if timeout
         if [[ $exitStatus == 124 ]]; then
