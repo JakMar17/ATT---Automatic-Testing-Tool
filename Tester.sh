@@ -42,15 +42,13 @@ language="java" #supported languages at this point: Java {default, java}, C {c},
 
 #functions
 
-function help() 
-{
+function help() {
     echo TO-DO
     exit 39
 }
 
 #checking if language is supported
-function supported_language() 
-{
+function supported_language() {
     if [ $1 == "java" ]; then
         printf "%b  %s\n" $E_QUESTION "Testing: "$program".java"
         return 0
@@ -68,8 +66,7 @@ function supported_language()
 
 #comparing two files and printing result
 #example compare $fileToCompare1 $fileToCompare2 $output file
-function compare()
-{
+function compare() {
     diff --ignore-trailing-space $1 $2 > $3 2> $3
     
     errorStatus=$?
@@ -82,14 +79,14 @@ function compare()
 
 #printing result of one of the test cases
 #example printResult $fileName
-function printResult()
-{
+function printResult() {
     fileName=$1
     diffFile=$diffOutput"/"$fileName
+    exitStatus=$2
 
-    if [ ! -f $diffFile ]; then
-        printf "${BLUE}%b${NC}  %s\t ${BLUE}Error, ignoring${NC}\n" $E_EXPLAMATION $fileName
-        (( noOfTests-- ))
+    if [ $exitStatus -ne 0 ]; then
+        printf "${BLUE}%b${NC}  %s\t ${BLUE} Error: diff returned %d, ignoring${NC}\n" $E_EXPLAMATION $fileName $exitStatus
+        (( noOfTest-- ))
     elif [ -s $diffFile ]; then
         printf "${RED}%b${NC}  %s\t ${RED}NOK${NC}\n" $E_XMARK $fileName
     else
@@ -100,8 +97,7 @@ function printResult()
 }
 
 #delete all emojis if those are disabled
-function emojis() 
-{
+function emojis() {
     if [ $emojiEnabled == false ]; then
         E_QUESTION=""
         E_XMARK=""
@@ -116,9 +112,7 @@ function emojis()
     fi
 }
 
-function javaTesting() 
-{
-    #compile Java code
+function javaCompile() {
     if javac $program".java" 2> $programOutput"/error.txt"; then
         printf "%b  %s\n\n" $E_CHECKMARK "Compiling: OK"
         rm $programOutput"/error.txt"
@@ -126,37 +120,9 @@ function javaTesting()
         printf "${ORANGE}Compiling failed\n${NC}Exiting\n"  
         exit 40
     fi
-
-    #running & comparing
-    for file in $input"/"*.txt; do
-        fileName=$(basename -- "$file")
-
-        #running
-        timeout $timeout java $program < $file > $programOutput"/"$fileName
-        exitStatus=$?
-        #if timeout
-        if [[ $exitStatus == 124 ]]; then
-            printf "%b  %s\t${BLUE}Timeout${NC}\n" $E_TIMEOUT $fileName
-            continue
-        fi
-        
-        #comparing
-        compare $testCases"/"$fileName $programOutput"/"$fileName $diffOutput"/"$fileName
-        exitStatus=$?
-
-        #printing
-        if [ $exitStatus -eq 0 ]; then
-            printResult $fileName
-        else
-            printf "${BLUE}%b${NC}  %s\t ${BLUE} Error: diff returned %d, ignoring${NC}\n" $E_EXPLAMATION $fileName $exitStatus
-        fi
-
-    done
 }
 
-function cTesting()
-{
-    echo TO-DO
+function cCompile() {
     #compile program using gcc
     if gcc "./"$program".c" -o $program 2> $programOutput"/error.txt"; then
         if [ -s $programOutput"/error.txt" ]; then
@@ -176,31 +142,72 @@ function cTesting()
         printf "${ORANGE}Compiling failed\n${NC}Exiting\n"  
         exit 40
     fi
+}
 
-    #running & comparing
+#function for compiling file
+#if programming language takes a lot of code to be compiled make new function called xxCompile
+function compile() {
+    case $language in
+        "java")
+            javaCompile
+        ;;
+        "c")
+            cCompile
+        ;;
+        *)
+            exit 40
+            ;;
+    esac
+}
+
+#function for running file
+#if programming language takes a lot of code to be compiled make new function called xxRun
+function run() {
+    file=$1
+
+    case $language in
+        "java")
+            timeout $timeout java $program < $file > $programOutput"/"$fileName
+            exitStatus=$?
+        ;;
+        "c")
+            timeout 1s "./"$program < $file > $programOutput"/"$fileName
+            exitStatus=$?
+        ;;
+        *)
+            exit 40
+            ;;
+    esac
+    return $exitStatus
+}
+
+function testing() {
+    #compile code
+    compile
+
     for file in $input"/"*.txt; do
         fileName=$(basename -- "$file")
 
         #running
-        timeout 1s "./"$program < $file > $programOutput"/"$fileName
+        run $file
         exitStatus=$?
         #if timeout
         if [[ $exitStatus == 124 ]]; then
             printf "%b  %s\t${BLUE}Timeout${NC}\n" $E_TIMEOUT $fileName
             continue
         fi
-
+        
         #comparing
-        compare $programOutput"/"$fileName $testCases"/"$fileName $diffOutput"/"$fileName
-
+        compare $testCases"/"$fileName $programOutput"/"$fileName $diffOutput"/"$fileName
+        exitStatus=$?
         #printing
-        printResult $fileName
+        printResult $fileName $exitStatus
 
     done
+
 }
 
-function result() 
-{
+function result() {
     if [ $noOfTests -eq 0 ]; then
         return 0
     fi
@@ -225,6 +232,8 @@ function result()
     fi
 
 }
+
+#main script
 
 if [ $# -lt 1 ]; then
     echo "Error: at least 1 argument"
@@ -272,13 +281,7 @@ mkdir -p $output
 mkdir -p $output"/programOutput"
 mkdir -p $output"/diff"
 
-if [ $language == "java" ]; then
-    javaTesting
-elif [ $language == "c" ]; then
-    cTesting
-elif [ $language == "cpp" ]; then
-    cTesting
-fi
+testing
 result
 
 exit 0
