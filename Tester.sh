@@ -21,13 +21,17 @@ E_EXCELENT='\U1F603' #80-89%
 E_PERFECT='\U1F929' #90-99%
 
 #paths to files
-input="./input"
-program=""
-testCases="./testCases"
+projectPath="."
 
-output="./output"
-programOutput=$output"/programOutput"
-diffOutput=$output"/diff"
+programName=""
+inputData=$projectPath"/input"
+testCases=$projectPath"/testCases"
+
+outputPath=$projectPath"/output"
+echo $outputPath
+programOutput=$outputPath"/programOutput"
+diffOutput=$outputPath"/diff"
+
 
 #counters
 noOfTests=0
@@ -37,7 +41,6 @@ okCases=0
 timeout=1s
 warnings=false
 emojiEnabled=true
-timeout="1s"
 language="java" #supported languages at this point: Java {default, java}, C {c}, C++ {cpp}
 
 #functions
@@ -277,9 +280,9 @@ emojis
 supported_language $language
 
 rm -rf $output
-mkdir -p $output
-mkdir -p $output"/programOutput"
-mkdir -p $output"/diff"
+mkdir -p $outputPath
+mkdir -p $programOutput
+mkdir -p $diffOutput
 
 testing
 result
