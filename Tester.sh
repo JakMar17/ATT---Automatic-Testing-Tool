@@ -159,7 +159,7 @@ function javaCompile() {
 
 function cCompile() {
     #compile program using gcc
-    if gcc $programPath".c" -o $projectPath$programName 2> $errorPath; then
+    if gcc $programPath".c" -o $projectPath"/"$programName 2> $errorPath; then
         if [ -s $errorPath ]; then
             printf "${BLUE}%s\n${NC}" "Compiled with warnings"
             if [ $warnings == true ]; then
@@ -203,7 +203,7 @@ function run() {
     case $language in
         "java")
             start=$(date +%s%N)
-            timeout $timeout java -classpath $projectPath $programName < $file > $programOutputPath"/"$fileName
+            timeout $timeout java -classpath $projectPath $programName < $file > $programOutputPath"/"$fileName 2> $programOutputPath"/"$fileName
             exitStatus=$?
             finnish=$(date +%s%N)
         ;;
