@@ -21,6 +21,7 @@ E_EXCELENT='\U1F603' #80-89%
 E_PERFECT='\U1F929' #90-99%
 
 #paths to files
+<<<<<<< HEAD
 projectPath="."
 
 programName=""
@@ -32,6 +33,24 @@ echo $outputPath
 programOutput=$outputPath"/programOutput"
 diffOutput=$outputPath"/diff"
 
+=======
+programName=""
+input="/input"
+testCases="/testCases"
+
+output="/output"
+programOutput="/programOutput"
+diffOutput="/diff"
+errorFile="/error.txt"
+
+projectPath="."
+inputPath=""
+testCasesPath=""
+outputPath=""
+programOutputPath=""
+diffOutputPath=""
+errorPath=""
+>>>>>>> development
 
 #counters
 noOfTests=0
@@ -45,6 +64,24 @@ emojiEnabled=true
 language="java" #supported languages at this point: Java {default, java}, C {c}, C++ {cpp}
 
 #functions
+
+function pathCreator() {
+    programPath=$projectPath"/"$programName
+
+    inputPath=$projectPath$input
+    testCasesPath=$projectPath$testCases
+
+    outputPath=$projectPath$output
+    programOutputPath=$outputPath$programOutput
+    diffOutputPath=$outputPath$diffOutput
+
+    errorPath=$programOutputPath$errorFile
+
+    rm -rf $output
+    mkdir -p $outputPath
+    mkdir -p $programOutputPath
+    mkdir -p $diffOutputPath
+}
 
 function help() {
     echo TO-DO
@@ -85,7 +122,7 @@ function compare() {
 #example printResult $fileName
 function printResult() {
     fileName=$1
-    diffFile=$diffOutput"/"$fileName
+    diffFile=$diffOutputPath"/"$fileName
     exitStatus=$2
     duration=$3
 
@@ -125,9 +162,9 @@ function emojis() {
 }
 
 function javaCompile() {
-    if javac $program".java" 2> $programOutput"/error.txt"; then
+    if javac -d $projectPath $programPath".java" 2> $errorPath; then
         printf "%b  %s\n\n" $E_CHECKMARK "Compiling: OK"
-        rm $programOutput"/error.txt"
+        rm $errorPath
     else
         printf "${ORANGE}Compiling failed\n${NC}Exiting\n"  
         exit 40
@@ -136,8 +173,8 @@ function javaCompile() {
 
 function cCompile() {
     #compile program using gcc
-    if gcc "./"$program".c" -o $program 2> $programOutput"/error.txt"; then
-        if [ -s $programOutput"/error.txt" ]; then
+    if gcc $programPath".c" -o $projectPath"/"$programName 2> $errorPath; then
+        if [ -s $errorPath ]; then
             printf "${BLUE}%s\n${NC}" "Compiled with warnings"
             if [ $warnings == true ]; then
                 :
@@ -148,7 +185,7 @@ function cCompile() {
             fi
         else
             printf "%b  %s\n\n" $E_CHECKMARK "Compiling: OK"
-            rm $programOutput"/error.txt"
+            rm $errorPath
         fi
     else
         printf "${ORANGE}Compiling failed\n${NC}Exiting\n"  
@@ -180,12 +217,12 @@ function run() {
     case $language in
         "java")
             start=$(date +%s%N)
-            timeout $timeout java $program < $file > $programOutput"/"$fileName
+            timeout $timeout java -classpath $projectPath $programName < $file > $programOutputPath"/"$fileName 2> $programOutputPath"/"$fileName
             exitStatus=$?
             finnish=$(date +%s%N)
         ;;
         "c")
-            timeout $timeout "./"$program < $file > $programOutput"/"$fileName
+            timeout $timeout "./"$programPath < $file > $programOutputPath"/"$fileName
             exitStatus=$?
         ;;
         *)
@@ -199,7 +236,7 @@ function testing() {
     #compile code
     compile
 
-    for file in $input"/"*.txt; do
+    for file in $inputPath"/"*.txt; do
         fileName=$(basename -- "$file")
 
         #running
@@ -218,7 +255,7 @@ function testing() {
         fi
         
         #comparing
-        compare $testCases"/"$fileName $programOutput"/"$fileName $diffOutput"/"$fileName
+        compare $testCasesPath"/"$fileName $programOutputPath"/"$fileName $diffOutputPath"/"$fileName
         exitStatus=$?
         #printing
         printResult $fileName $exitStatus $duration
@@ -261,7 +298,7 @@ if [ $# -lt 1 ]; then
 elif [ $1 == "help" ]; then
     help
 else
-    program=$1
+    programName=$1
     echo $program
 fi
 
@@ -276,8 +313,6 @@ for (( i=2; i<="$#"; i++)); do
     elif [ $argument == "-o" ]; then
         (( i++ ))
         output=${!i}
-        programOutput=$output"/programOutput"
-        diffOutput=$output"/diff"
     elif [ $argument == "-i" ]; then
         (( i++ ))
         input=${!i}
@@ -292,17 +327,24 @@ for (( i=2; i<="$#"; i++)); do
         timeout=${!i}
     elif [ $argument == "-times" ]; then
         times=true
+    elif [ $argument == "-p" ]; then
+        (( i++ ))
+        projectPath=${!i}
     fi
 done
 
+pathCreator
 emojis
 supported_language $language
 
+<<<<<<< HEAD
 rm -rf $output
 mkdir -p $outputPath
 mkdir -p $programOutput
 mkdir -p $diffOutput
 
+=======
+>>>>>>> development
 testing
 result
 
