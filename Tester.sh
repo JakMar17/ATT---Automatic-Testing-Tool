@@ -21,19 +21,6 @@ E_EXCELENT='\U1F603' #80-89%
 E_PERFECT='\U1F929' #90-99%
 
 #paths to files
-<<<<<<< HEAD
-projectPath="."
-
-programName=""
-inputData=$projectPath"/input"
-testCases=$projectPath"/testCases"
-
-outputPath=$projectPath"/output"
-echo $outputPath
-programOutput=$outputPath"/programOutput"
-diffOutput=$outputPath"/diff"
-
-=======
 programName=""
 input="/input"
 testCases="/testCases"
@@ -50,7 +37,6 @@ outputPath=""
 programOutputPath=""
 diffOutputPath=""
 errorPath=""
->>>>>>> development
 
 #counters
 noOfTests=0
@@ -337,14 +323,6 @@ pathCreator
 emojis
 supported_language $language
 
-<<<<<<< HEAD
-rm -rf $output
-mkdir -p $outputPath
-mkdir -p $programOutput
-mkdir -p $diffOutput
-
-=======
->>>>>>> development
 testing
 result
 
