@@ -77,13 +77,10 @@ function help() {
 #checking if language is supported
 function supported_language() {
     if [ $1 == "java" ]; then
-        printf "%b  %s\n" $E_QUESTION "Testing: "$program".java"
+        printf "%b  %s\n" $E_QUESTION "Testing: "$programName".java"
         return 0
     elif [ $1 == "c" ]; then
-        printf "%b  %s\n" $E_QUESTION "Testing: "$program".c"
-        return 0
-    elif [ $1 == "cpp" ]; then
-        printf "%b  %s\n" $E_QUESTION "Testing: "$program".c"
+        printf "%b  %s\n" $E_QUESTION "Testing: "$programName".c"
         return 0
     else
         echo Language not supported {supported: java, c, cpp}
@@ -211,8 +208,9 @@ function run() {
             #time java -classpath $projectPath $programName < $file > $programOutputPath"/"$fileName 2> $programOutputPath"/"$fileName
         ;;
         "c")
-            timeout $timeout "./"$programPath < $file > $programOutputPath"/"$fileName
+            timeout $timeout "./"$programPath < $file > $programOutputPath"/"$fileName 2> $programOutputPath"/"$fileName
             exitStatus=$?
+            finnish=$(date +%s%N)
         ;;
         *)
             exit 40
@@ -233,7 +231,6 @@ function testing() {
         run $file
         exitStatus=$?
         
-        finnish=$(date +%s%N)
         duration=$(( finnish-start ))
         duration=$(($duration/1000000))
 
@@ -288,7 +285,6 @@ elif [ $1 == "help" ]; then
     help
 else
     programName=$1
-    echo $program
 fi
 
 for (( i=2; i<="$#"; i++)); do
