@@ -203,9 +203,12 @@ function run() {
     case $language in
         "java")
             start=$(date +%s%N)
-            timeout $timeout java -classpath $projectPath $programName < $file > $programOutputPath"/"$fileName 2> $programOutputPath"/"$fileName
+            #timeout $timeout java -classpath $projectPath $programName < $file > $programOutputPath"/"$fileName 2> $programOutputPath"/"$fileName
+            time timeout $timeout java -classpath $projectPath $programName < $file > $programOutputPath"/"$fileName 2> $programOutputPath"/"$fileName
             exitStatus=$?
             finnish=$(date +%s%N)
+            echo tukaj
+            #time java -classpath $projectPath $programName < $file > $programOutputPath"/"$fileName 2> $programOutputPath"/"$fileName
         ;;
         "c")
             timeout $timeout "./"$programPath < $file > $programOutputPath"/"$fileName
