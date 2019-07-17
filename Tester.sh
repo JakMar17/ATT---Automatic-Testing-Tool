@@ -71,7 +71,7 @@ function pathCreator() {
 
 function help() {
     echo TO-DO
-    exit 39
+    exit 03
 }
 
 #checking if language is supported
@@ -83,8 +83,8 @@ function supported_language() {
         printf "%b  %s\n" $E_QUESTION "Testing: "$programName".c"
         return 0
     else
-        echo Language not supported {supported: java, c, cpp}
-        exit 41
+        echo Language not supported {supported: java, c}
+        exit 02
     fi
 }
 
@@ -150,7 +150,7 @@ function javaCompile() {
         rm $errorPath
     else
         printf "${ORANGE}Compiling failed\n${NC}Exiting\n"  
-        exit 40
+        exit 11
     fi
 }
 
@@ -164,7 +164,7 @@ function cCompile() {
             else
                 printf "To continue testing with warnings use '-w true' while running script\n"
                 printf "Exiting\n"
-                exit 38
+                exit 12
             fi
         else
             printf "%b  %s\n\n" $E_CHECKMARK "Compiling: OK"
@@ -172,7 +172,7 @@ function cCompile() {
         fi
     else
         printf "${ORANGE}Compiling failed\n${NC}Exiting\n"  
-        exit 40
+        exit 11
     fi
 }
 
@@ -187,7 +187,7 @@ function compile() {
             cCompile
         ;;
         *)
-            exit 40
+            exit 91
             ;;
     esac
 }
@@ -201,10 +201,9 @@ function run() {
         "java")
             start=$(date +%s%N)
             #timeout $timeout java -classpath $projectPath $programName < $file > $programOutputPath"/"$fileName 2> $programOutputPath"/"$fileName
-            time timeout $timeout java -classpath $projectPath $programName < $file > $programOutputPath"/"$fileName 2> $programOutputPath"/"$fileName
+            timeout $timeout java -classpath $projectPath $programName < $file > $programOutputPath"/"$fileName 2> $programOutputPath"/"$fileName
             exitStatus=$?
             finnish=$(date +%s%N)
-            echo tukaj
             #time java -classpath $projectPath $programName < $file > $programOutputPath"/"$fileName 2> $programOutputPath"/"$fileName
         ;;
         "c")
@@ -213,7 +212,7 @@ function run() {
             finnish=$(date +%s%N)
         ;;
         *)
-            exit 40
+            exit 92
             ;;
     esac
     return $exitStatus
@@ -237,6 +236,7 @@ function testing() {
         #if timeout
         if [[ $exitStatus == 124 ]]; then
             printf "%b  %s\t${BLUE}Timeout${NC}\n" $E_TIMEOUT $fileName
+            (( noOfTests++ ))
             continue
         fi
         
@@ -280,7 +280,7 @@ function result() {
 
 if [ $# -lt 1 ]; then
     echo "Error: at least 1 argument"
-    exit 42
+    exit 01
 elif [ $1 == "help" ]; then
     help
 else
@@ -325,4 +325,4 @@ supported_language $language
 testing
 result
 
-exit 0
+exit 42
