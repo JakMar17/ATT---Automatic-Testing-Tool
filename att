@@ -70,7 +70,9 @@ function pathCreator() {
 }
 
 function help() {
-    echo TO-DO
+    echo "Use: bash att <name of tested program>"
+    echo "Optional: -l <language> -p <project path> -w <true> -times -t <timeout> -e <false> -i <input data path> -o <output data path>"
+    echo "For further informations refer to GitHub wiki"
     exit 03
 }
 
